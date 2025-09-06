@@ -1,0 +1,413 @@
+﻿/* ===== SIGN UP PAGE SPECIFIC STYLES ===== */
+.SignUpForm {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(108, 110, 234, 0.25), 0 15px 35px rgba(236, 110, 173, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    width: 100%;
+}
+
+    .SignUpForm .auth-title {
+        color: white;
+        text-align: center;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        margin-bottom: 30px;
+        font-weight: 600;
+        font-size: 2.2rem;
+    }
+
+    .SignUpForm .form-group {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .SignUpForm label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-size: 1rem;
+    }
+
+    .SignUpForm .fa-solid {
+        position: absolute;
+        left: 15px;
+        top: 38px;
+        color: rgba(255, 225, 235, 0.9);
+        font-size: 16px;
+        z-index: 2;
+        text-shadow: 0 0 5px rgba(236, 110, 173, 0.4);
+    }
+
+    .SignUpForm input[type="text"],
+    .SignUpForm input[type="password"],
+    .SignUpForm input[type="email"],
+    .SignUpForm select {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        color: white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .SignUpForm input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .SignUpForm input[type="text"]:focus,
+    .SignUpForm input[type="password"]:focus,
+    .SignUpForm input[type="email"]:focus,
+    .SignUpForm select:focus {
+        outline: none;
+        border-color: rgba(236, 110, 173, 0.6);
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 15px rgba(236, 110, 173, 0.3);
+    }
+
+    .SignUpForm select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 16px;
+        padding-right: 45px;
+        color: black;
+    }
+
+    .SignUpForm .auth-btn {
+        background: #3498db;
+        color: white;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 10px;
+        font-weight: 600;
+        font-size: 16px;
+        width: 100%;
+        transition: background 0.3s ease;
+    }
+
+        .SignUpForm .auth-btn:hover {
+            background: #2980b9;
+            box-shadow: 0 8px 25px rgba(108, 110, 234, 0.4);
+        }
+
+/* ===== SIGN IN PAGE SPECIFIC STYLES ===== */
+
+/* Body styling for auth pages */
+body.auth-page {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #ec6ead 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Sign In Form Container */
+.SignInForm {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(108, 110, 234, 0.25), 0 15px 35px rgba(236, 110, 173, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    width: 100%;
+}
+
+    /* Title styling */
+    .SignInForm .auth-title {
+        color: white;
+        text-align: center;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        margin-bottom: 30px;
+        font-weight: 600;
+        font-size: 2.2rem;
+    }
+
+/* Error message styling */
+.error-message {
+    background: rgba(236, 110, 173, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(236, 110, 173, 0.3);
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: #ffebee;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Form groups */
+.SignInUser,
+.SignInPass,
+.SignInRole {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+/* Labels */
+.SignInForm label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    font-size: 1rem;
+}
+
+/* Icons */
+.SignInForm .fa-solid {
+    position: absolute;
+    left: 15px;
+    top: 38px;
+    color: rgba(255, 225, 235, 0.9);
+    font-size: 16px;
+    z-index: 2;
+    text-shadow: 0 0 5px rgba(236, 110, 173, 0.4);
+}
+
+/* Input fields */
+.SignInForm input[type="text"],
+.SignInForm input[type="password"],
+.SignInForm select {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+/* Input placeholders */
+.SignInForm input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Input focus effects */
+.SignInForm input[type="text"]:focus,
+.SignInForm input[type="password"]:focus,
+.SignInForm select:focus {
+    outline: none;
+    border-color: rgba(236, 110, 173, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 15px rgba(236, 110, 173, 0.3);
+}
+
+/* Dropdown styling */
+.SignInForm select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+    padding-right: 45px;
+    color: black;
+}
+
+/* Submit button */
+.submit-btn {
+    background: #3498db;
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    width: 100%;
+    transition: background 0.3s ease;
+}
+
+    .submit-btn:hover {
+        background: #2980b9;
+    }
+/* Form footer - NOW INSIDE FORM BODY */
+.form-footer {
+    margin-top: 25px;
+    text-align: center;
+    color: rgba(255, 225, 235, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+    .form-footer a {
+        color: rgba(255, 225, 235, 0.9);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .form-footer a:hover {
+            color: white;
+            text-shadow: 0 0 12px rgba(255, 200, 220, 0.8);
+        }
+
+/* ======== Navbar/Partial styling ======= */
+.menu-container {
+    background: rgba(180, 170, 160, 0.15);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    padding: 20px 30px;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 10px 30px rgba(140, 130, 120, 0.2), 0 8px 25px rgba(120, 110, 100, 0.15);
+    border: 1px solid rgba(200, 190, 180, 0.25);
+    border-top: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.menu-title {
+    color: #5a4d41;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    flex: 1;
+    margin: 0 20px;
+}
+
+.nav-link {
+    color: #6d6054;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    background: none;
+    border: none;
+    backdrop-filter: none;
+}
+
+    .nav-link.current-page {
+        color: #4a3f35;
+        font-weight: 700;
+    }
+
+        .nav-link.current-page::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #5a4d41;
+            border-radius: 2px;
+        }
+
+    /* Hover underline effect for other pages */
+    .nav-link:not(.current-page)::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #8a7d70;
+        transition: width 0.3s ease;
+    }
+
+    .nav-link:not(.current-page):hover::after {
+        width: 100%;
+    }
+
+    .nav-link:hover {
+        color: #4a3f35;
+        transform: translateY(-2px);
+    }
+
+    .nav-link i {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+        color: #7a6d61;
+    }
+
+    .nav-link.current-page i {
+        color: #5a4d41;
+    }
+
+    .nav-link:hover i {
+        transform: translateY(-2px);
+        color: #5a4d41;
+    }
+
+    /* Active link styling */
+    .nav-link.active {
+        color: #4a3f35;
+    }
+
+        .nav-link.active::after {
+            width: 100%;
+            background: #5a4d41;
+        }
+
+/* ===== CLAIMS MESSAGE CONTAINER STYLING ===== */
+.ClaimsMSG {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 30px 40px;
+    margin: 100px auto 30px auto;
+    text-align: center;
+    position: relative;
+}
+
+    .ClaimsMSG h1 {
+        color: #5a4d41;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+    }
+
+    .ClaimsMSG h2 {
+        color: #6d6054;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+    }
+
+
+

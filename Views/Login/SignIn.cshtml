@@ -1,0 +1,47 @@
+﻿@{
+    ViewBag.title = "SignIn";
+    ViewBag.BodyClass = "auth-page";
+}
+
+<link rel="stylesheet" href="~/css/SignUp.css" />
+
+<body class="@ViewBag.BodyClass">
+    <!-- REMOVE the outer SignInForm div and apply the class directly to the form -->
+    <form class="SignInForm" action="ValidateSignIn" method="post">
+        <h2 class="auth-title">Sign In</h2>
+
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="error-message">@ViewBag.ErrorMessage</div>
+        }
+
+        <div class="SignInUser">
+            <label>UserName</label>
+            <i class="fa-solid fa-user"></i>
+            <input type="text" name="Name" id="Name" placeholder="enter username" />
+        </div>
+
+        <div class="SignInPass">
+            <label>Password</label>
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" name="Password" id="Password" placeholder="enter your password" />
+        </div>
+
+        <div class="SignInRole">
+            <label>Select Role</label>
+            <i class="fa-solid fa-users"></i>
+            @Html.DropDownList("Roles", new List<SelectListItem>{
+            new SelectListItem { Text = "Student", Value = "1" },
+                        new SelectListItem { Text = "Lecturer", Value = "2" },
+                        }, new { id = "roleDropdown", name = "Roles" })
+        </div>
+
+        <input class="submit-btn" type="submit" value="Sign In" />
+
+        <div class="form-footer">
+            Don't Have Account? <a href="~/Login/SignUp">Sign Up</a>
+        </div>
+    </form>
+</body>
+
+
