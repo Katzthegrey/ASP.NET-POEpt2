@@ -1,8 +1,91 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "MonthlyClaimsLecturer";
 }
 @Html.Partial("_menu")
 <link rel="stylesheet" href="~/css/SignUp.css" />
+
+<div class="ClaimsMSG">
 <h1>MonthlyClaimsLecturer</h1>
+<h2>Welcome @ViewBag.Name</h2>
+</div>  
+ <!-- Lecturer Design Table-->
+<p>
+    <a action="Add_Claim" class="claims-btn-primary">ADD NEW CLAIM</a>
+</p>
+<div class="card claims-card">
+    <div class="card-header claims-card-header">
+        <h3 class="card-title claims-card-title">Lecturers Claim Info</h3>
+    </div>
+    <div class="card-body">
+        <table id="example1" class="table table-bordered table-striped claims-table">
+            <thead>
+                <tr>
+                    <th>
+                        Claim ID
+                    </th>
+                    <th>
+                        Claim Date
+                    </th>
+                    <th>
+                        Course
+                    </th>
+                    <th>
+                        Hourly Rate
+                    </th>
+                    <th>
+                        Hours Worked
+                    </th>
+                    <th>
+                        Claim Status
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rowCount = ViewBag.ClaimIdList.Count;
+                }
+                @for (int i = 0; i < rowCount; i++)
+                {
+                    <tr>
+                        <td class="claim-id">@ViewBag.ClaimIdList[i]</td>
+                        <td>
+                            @ViewBag.ClaimDateList[i]
+                        </td>
+                        <td>
+                            @ViewBag.CourseList[i]
+                        </td>
+                        <td>R
+                            @ViewBag.HourlyRateList[i]
+                        </td>
+                        <td>
+                            @ViewBag.HoursWorkedList[i]h
+                        </td>
+                        <td>
+                            @{
+                                var status = ViewBag.ClaimStatusList[i];
+                                var badgeClass = "bg-secondary claims-badge";
+                                if (status == "Submitted") badgeClass = "bg-primary claims-badge";
+                                if (status == "Approved") badgeClass = "bg-success claims-badge";
+                                if (status == "Paid") badgeClass = "bg-info claims-badge";
+                                if (status == "Rejected") badgeClass = "bg-danger claims-badge";
+                            }
+                            <span class="badge @badgeClass">@status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="table-active">
+                    <td colspan="4" class="text-end"><strong>Total Hours:</strong></td>
+                    <td><strong>@ViewBag.TotalHours h</strong></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="mt-3">
+            <a href="#" class="btn claims-btn-primary">Submit New Claim</a>
+        </div>
+    </div>
+</div>
+
 

@@ -45,23 +45,48 @@ namespace POEpt1.Controllers
                 return View("SignIn");
             }
             // Redirect based on role
-            if (Roles == "2") // Lecturer
+            if (Roles == "2") // Coordinator
             {
-                return RedirectToAction("MonthlyClaimsLecturer");
+                return RedirectToAction("MonthlyClaimsCoordinator", "Login");
             }
-            else // Student
+            else // Lecturer
             {
-                return RedirectToAction("MonthlyClaimsStudent", new { Name = Name, Password = Password });
+                return RedirectToAction("MonthlyClaimsLecturer", new { Name = Name, Password = Password });
             }
             }
-        public IActionResult MonthlyClaimsStudent(string Name, string Password)
+        public IActionResult MonthlyClaimsLecturer(string Name, string Password)
         {
          
             ViewBag.Name = Name; 
             ViewBag.pass = Password;
+            // Using ViewBags List Generic for table data
+            ViewBag.ClaimIdList = new List<int> { 1042, 981, 875, 729 };
+            ViewBag.ClaimDateList = new List<string> {
+               "2025-03-25",
+               "2025-02-28",
+               "2025-02-20",
+               "2025-01-31"
+               };
+            ViewBag.CourseList = new List<string> {
+                "BSc Computer Science",
+                "BSc Computer Science",
+                "BSc Data Science",
+                "BSc Computer Science"
+    };
+            ViewBag.HourlyRateList = new List<decimal> { 400.00m, 400.00m, 400.00m, 400.00m }; // Same rate for all their claims
+            ViewBag.HoursWorkedList = new List<decimal> { 10.0m, 12.5m, 8.5m, 15.0m };
+            ViewBag.ClaimStatusList = new List<string> {
+            "Submitted",  
+            "Approved",   
+            "Paid",       
+            "Rejected"   
+    };
+
+            // Calculate the total hours for all claims
+            ViewBag.TotalHours = ((List<decimal>)ViewBag.HoursWorkedList).Sum();
             return View();
         }
-        public IActionResult MonthlyClaimsLecturer()
+        public IActionResult MonthlyClaimsCoordinator()
         {
             return View();
         }
