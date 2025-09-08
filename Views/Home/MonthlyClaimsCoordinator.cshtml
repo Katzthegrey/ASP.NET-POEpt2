@@ -1,0 +1,80 @@
+﻿
+@{
+    ViewData["Title"] = "MonthlyClaimsCoordinator";
+}
+@Html.Partial("_menu")
+<link rel="stylesheet" href="~/css/SignUp.css" />
+<div class="Coordinator-msg">
+<h1>MonthlyClaimsCoordinator</h1>
+<h2>@ViewBag.Name</h2>
+</div>
+
+<!--Coordinators table-->
+<div class="coordinator-card">
+    <div class="coordinator-header coordinator-card-header">
+        <h3 class="card-title coordinator-card-title">Claims Info Review Board</h3>
+    </div>
+    <div class="card-body">
+        <table id="example1" class="table table-bordered table-striped claims-table">
+            <thead>
+                <tr>
+                    <th>
+                        Staff ID
+                    </th>
+                    <th>
+                        Lecturer Name
+                    </th>
+                    <th>
+                        Claim ID
+                    </th>
+                    <th>
+                        Claim Date
+                    </th>
+                    <th>
+                        TotalHours Worked
+                    </th>
+                    <th>
+                        Claim Status
+                    </th>
+                    <th>
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rowCount = ViewBag.StaffIdList.Count;
+                }
+                @for (int i = 0; i < rowCount; i++)
+                {
+                    <tr>
+                        <td class="staff-id">@ViewBag.StaffIdList[i]</td>
+                        <td>
+                            @ViewBag.StaffNameList[i]
+                        </td>
+                        <td>
+                            @ViewBag.ClaimIdList[i]
+                        </td>
+                        <td>
+                            @ViewBag.ClaimDateList[i]
+                        </td>
+                        <td>
+                            @ViewBag.TotalHoursList[i]h
+                        </td>
+                        <td>
+                            @ViewBag.ClaimStatusList[i]
+                        </td>
+                        <td>
+                            <div class="coordinator-btn-group ">
+                                <button class="btn-success">Approve</button>
+                                <button class="btn-danger">Reject</button>
+                                <button class="btn-info">View</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

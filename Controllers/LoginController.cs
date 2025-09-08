@@ -47,7 +47,7 @@ namespace POEpt1.Controllers
             // Redirect based on role
             if (Roles == "2") // Coordinator
             {
-                return RedirectToAction("MonthlyClaimsCoordinator", "Login");
+                return RedirectToAction("MonthlyClaimsCoordinator", "Home", new { CoordinatorName = Name });
             }
             else // Lecturer
             {
@@ -86,9 +86,6 @@ namespace POEpt1.Controllers
             ViewBag.TotalHours = ((List<decimal>)ViewBag.HoursWorkedList).Sum();
             return View();
         }
-        public IActionResult MonthlyClaimsCoordinator()
-        {
-            return View();
-        }
+        
     }
 }

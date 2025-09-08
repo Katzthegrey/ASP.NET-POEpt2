@@ -9,10 +9,13 @@
 <h2>Welcome @ViewBag.Name</h2>
 </div>  
  <!-- Lecturer Design Table-->
-<p>
-    <a action="Add_Claim" class="claims-btn-primary">ADD NEW CLAIM</a>
-</p>
-<div class="card claims-card">
+<div class="text-end mb-3">
+    <a action="Add_Claim" class="claims-btn-primary">
+        ADD NEW CLAIM
+        <i class="fas fa-file-alt"></i>
+    </a>
+</div>
+<div class="claims-card">
     <div class="card-header claims-card-header">
         <h3 class="card-title claims-card-title">Lecturers Claim Info</h3>
     </div>
@@ -82,9 +85,6 @@
                 </tr>
             </tfoot>
         </table>
-        <div class="mt-3">
-            <a href="#" class="btn claims-btn-primary">Submit New Claim</a>
-        </div>
     </div>
 </div>
 
