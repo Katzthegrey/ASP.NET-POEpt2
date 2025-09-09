@@ -1,0 +1,105 @@
+﻿@{
+    ViewData["Title"] = "MonthlyClaimManager";
+}
+@Html.Partial("_menu")
+<link rel="stylesheet" href="~/css/SignUp.css" />
+<div class="Manager-msg">
+<h1>MonthlyClaimsManager</h1>
+<h2>Welcome @ViewBag.Name</h2>
+</div>
+
+<!--Managers Table-->
+
+<div class="manager-card">
+    <div class="manager-header">
+        <h3 class="manager-card-title">Approved Claims for Payment</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table manager-table">
+                <thead>
+                    <tr>
+                        <th>
+                            Claim ID
+                        </th>
+                        <th>
+                            Staff ID
+                        </th>
+                        <th>
+                            Lecturer Name
+                        </th>
+                        <th>
+                            Course
+                        </th>
+                        <th>
+                            Coordinator
+                        </th>
+                        <th>
+                            Date
+                        </th>
+                        <th>
+                            Total Hours
+                        </th>
+                        <th>
+                            Total Amount
+                        </th>
+                        <th>
+                            Status
+                        </th>
+                        <th>
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int rowCount = ViewBag.ClaimIdList.Count;
+                    }
+                    @for (int i = 0; i < rowCount; i++)
+                    {
+                        <tr>
+                            <td class="Manager-Id">@ViewBag.ClaimIdList[i]</td>
+                            <td>
+                                @ViewBag.StaffIdList[i]
+                             </td>
+                            <td>
+                                @ViewBag.StaffNameList[i]
+                            </td>
+                            <td>
+                                @ViewBag.CourseList[i]
+                            </td>
+                            <td>
+                                @ViewBag.CoordinatorList[i]
+                            </td>
+                            <td>
+                                @ViewBag.DateList[i]
+                            </td>
+                            <td>
+                                @ViewBag.TotalHoursList[i]h
+                            </td>
+                            <td class="fw-bold">R @ViewBag.TotalAmountList[i].ToString("N2")
+                            </td>
+                            <td>
+                                @{
+                                    var status = ViewBag.FinalStatusList[i];
+                                    var badgeClass = "bg-warning";
+                                    if (status == "Ready for Payment") badgeClass = "bg-success";
+                                    if (status == "Paid") badgeClass = "bg-info";
+                                    if (status == "Rejected") badgeClass = "bg-danger";
+                                    if (status == "On Hold") badgeClass = "bg-secondary";
+                                }
+                                <span class="badge @badgeClass">@status</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-success">Authorize Payment</button>
+                                    <button class="btn btn-warning">Place on Hold</button>
+                                    <button class="btn btn-info">View Details</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>

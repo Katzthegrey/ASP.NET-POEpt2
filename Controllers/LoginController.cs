@@ -49,6 +49,10 @@ namespace POEpt1.Controllers
             {
                 return RedirectToAction("MonthlyClaimsCoordinator", "Home", new { CoordinatorName = Name });
             }
+            else if(Roles == "3")
+            {
+                return RedirectToAction("MonthlyClaimManager", "Home", new { ManagerName = Name });
+            }
             else // Lecturer
             {
                 return RedirectToAction("MonthlyClaimsLecturer", new { Name = Name, Password = Password });
