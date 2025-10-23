@@ -103,6 +103,82 @@
             box-shadow: 0 8px 25px rgba(108, 110, 234, 0.4);
         }
 
+    /* ===== CONFIRM PASSWORD FIELD STYLING ===== */
+    .SignUpForm .form-group:has(input[type="password"]) {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .SignUpForm .confirm-password-group {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+        .SignUpForm .confirm-password-group .fa-solid {
+            position: absolute;
+            left: 15px;
+            top: 38px;
+            color: rgba(255, 225, 235, 0.9);
+            font-size: 16px;
+            z-index: 2;
+            text-shadow: 0 0 5px rgba(236, 110, 173, 0.4);
+        }
+
+        .SignUpForm .confirm-password-group input[type="password"] {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+            .SignUpForm .confirm-password-group input[type="password"]:focus {
+                outline: none;
+                border-color: rgba(236, 110, 173, 0.6);
+                background: rgba(255, 255, 255, 0.15);
+                box-shadow: 0 0 15px rgba(236, 110, 173, 0.3);
+            }
+
+    /* Error message styling for validation */
+    .SignUpForm .text-danger {
+        color: #ff6b8b !important;
+        font-size: 0.875rem;
+        margin-top: 5px;
+        display: block;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+/* Success and error message containers */
+.error-message {
+    background: rgba(236, 110, 173, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(236, 110, 173, 0.3);
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: #ffebee;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.success-message {
+    background: rgba(102, 126, 234, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: #e8eaf6;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
 /* ===== SIGN IN PAGE SPECIFIC STYLES ===== */
 
 /* Body styling for auth pages */
@@ -155,7 +231,7 @@ body.auth-page {
 }
 
 /* Form groups */
-.SignInUser,
+.SignInEmail,
 .SignInPass,
 .SignInRole {
     position: relative;
@@ -183,9 +259,10 @@ body.auth-page {
     text-shadow: 0 0 5px rgba(236, 110, 173, 0.4);
 }
 
-/* Input fields */
+/* Input fields - UPDATED TO INCLUDE EMAIL */
 .SignInForm input[type="text"],
 .SignInForm input[type="password"],
+.SignInForm input[type="email"], /* Added email input */
 .SignInForm select {
     width: 100%;
     padding: 12px 15px 12px 45px;
@@ -204,9 +281,10 @@ body.auth-page {
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* Input focus effects */
+/* Input focus effects - UPDATED TO INCLUDE EMAIL */
 .SignInForm input[type="text"]:focus,
 .SignInForm input[type="password"]:focus,
+.SignInForm input[type="email"]:focus, /* Added email focus */
 .SignInForm select:focus {
     outline: none;
     border-color: rgba(236, 110, 173, 0.6);

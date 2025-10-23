@@ -1,48 +1,67 @@
-﻿@{
-    ViewBag.title = "SignIn";
-    ViewBag.BodyClass = "auth-page";
+﻿@using POEpt1.ViewModels.Account
+@model SignInViewModel
+
+@{
+    ViewData["Title"] = "Sign In";
 }
 
 <link rel="stylesheet" href="~/css/SignUp.css" />
 
-<body class="@ViewBag.BodyClass">
-    <!-- REMOVE the outer SignInForm div and apply the class directly to the form -->
-    <form class="SignInForm" action="ValidateSignIn" method="post">
+<body class="auth-page">
+    <form class="SignInForm" asp-controller="Login" asp-action="SignIn" method="post">
         <h2 class="auth-title">Sign In</h2>
 
-        @if (ViewBag.ErrorMessage != null)
+        <!-- Validation Summary -->
+        <div asp-validation-summary="ModelOnly" class="error-message"></div>
+
+        @if (TempData["ErrorMessage"] != null)
         {
-            <div class="error-message">@ViewBag.ErrorMessage</div>
+            <div class="error-message">@TempData["ErrorMessage"]</div>
         }
 
-        <div class="SignInUser">
-            <label>UserName</label>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="success-message">@TempData["SuccessMessage"]</div>
+        }
+
+        <div class="form-group SignInEmail">
+            <label asp-for="Email"></label>
             <i class="fa-solid fa-user"></i>
-            <input type="text" name="Name" id="Name" placeholder="enter username" />
+            <input asp-for="Email" type="email" placeholder="enter your email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
-        <div class="SignInPass">
-            <label>Password</label>
+        <div class="form-group SignInPass">
+            <label asp-for="Password"></label>
             <i class="fa-solid fa-lock"></i>
-            <input type="password" name="Password" id="Password" placeholder="enter your password" />
+            <input asp-for="Password" type="password" placeholder="enter your password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
-        <div class="SignInRole">
-            <label>Select Role</label>
+        <div class="form-group SignInRole">
+            <label asp-for="CustomRole"></label>
             <i class="fa-solid fa-users"></i>
-            @Html.DropDownList("Roles", new List<SelectListItem>{
-            new SelectListItem { Text = "Lecturer", Value = "1" },
-                        new SelectListItem { Text = "Coordinator", Value = "2" },
-                        new SelectListItem {Text = "Manager", Value = "3"},
-                        }, new { id = "roleDropdown", name = "Roles" })
+            <select asp-for="CustomRole" asp-items="Model.AvailableRoles" id="roleDropdown">
+                <option value="">Select Role</option>
+            </select>
+            <span asp-validation-for="CustomRole" class="text-danger"></span>
+        </div>
+
+        <div class="form-check">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label">Remember me</label>
         </div>
 
         <input class="submit-btn" type="submit" value="Sign In" />
 
         <div class="form-footer">
-            Don't Have Account? <a href="~/Login/SignUp">Sign Up</a>
+            Don't Have Account? <a asp-controller="Login" asp-action="SignUp">Sign Up</a>
         </div>
     </form>
 </body>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
 
 

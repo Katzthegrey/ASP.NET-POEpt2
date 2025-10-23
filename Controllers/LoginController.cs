@@ -1,95 +1,189 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using POEpt1.Services;
+using POEpt1.Models;
+using POEpt1.ViewModels.Account;
 
 namespace POEpt1.Controllers
 {
     public class LoginController : Controller
     {
+        private readonly ApplicationDbContextClass _context;
+
+        public LoginController(ApplicationDbContextClass context)
+        {
+            _context = context;
+        }
+
         public IActionResult Index()
         {
             return View();
         }
-        public IActionResult SignIn(string Name, string Password, string Email, string Roles)
-        {
-            // Store the signup details in ViewBag to pre-populate the SignIn form
-            ViewBag.SignUpName = Name;
-            ViewBag.SignUpPassword = Password;
-            ViewBag.SignUpEmail = Email;
-            ViewBag.SignUpRole = Roles;
 
-            return View();
+        [HttpGet]
+        public IActionResult SignIn(string returnUrl = null)
+        {
+            var viewModel = new SignInViewModel
+            {
+                ReturnUrl = returnUrl,
+                AvailableRoles = GetAvailableRoles()
+            };
+
+            return View(viewModel);
         }
+
+        [HttpGet]
         public IActionResult SignUp()
         {
-            return View();
+            var viewModel = new SignUpViewModel
+            {
+                AvailableRoles = GetAvailableRoles()
+            };
+            return View(viewModel);
         }
-        public IActionResult ValidateSignIn(string Name, string Password, string Roles)
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignIn(SignInViewModel model)
         {
-            // Check if both fields are empty
-            if (string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(Password))
+            if (!ModelState.IsValid)
             {
-                ViewBag.ErrorMessage = "Please enter both username and password";
-                return View("SignIn");
+                model.AvailableRoles = GetAvailableRoles();
+                return View(model);
             }
 
-            // Check if only Name is empty
-            if (string.IsNullOrEmpty(Name))
-            {
-                ViewBag.ErrorMessage = "Please enter username";
-                return View("SignIn");
-            }
+            // Find user by email
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive == true);
 
-            // Check if only Password is empty
-            if (string.IsNullOrEmpty(Password))
+            if (user != null)
             {
-                ViewBag.ErrorMessage = "Please enter password";
-                return View("SignIn");
-            }
-            // Redirect based on role
-            if (Roles == "2") // Coordinator
-            {
-                return RedirectToAction("MonthlyClaimsCoordinator", "Home", new { CoordinatorName = Name });
-            }
-            else if(Roles == "3")
-            {
-                return RedirectToAction("MonthlyClaimManager", "Home", new { ManagerName = Name });
-            }
-            else // Lecturer
-            {
-                return RedirectToAction("MonthlyClaimsLecturer", new { Name = Name, Password = Password });
-            }
-            }
-        public IActionResult MonthlyClaimsLecturer(string Name, string Password)
-        {
-         
-            ViewBag.Name = Name; 
-            ViewBag.pass = Password;
-            // Using ViewBags List Generic for table data
-            ViewBag.ClaimIdList = new List<int> { 1042, 981, 875, 729 };
-            ViewBag.ClaimDateList = new List<string> {
-               "2025-03-25",
-               "2025-02-28",
-               "2025-02-20",
-               "2025-01-31"
-               };
-            ViewBag.CourseList = new List<string> {
-                "BSc Computer Science",
-                "BSc Computer Science",
-                "BSc Data Science",
-                "BSc Computer Science"
-    };
-            ViewBag.HourlyRateList = new List<decimal> { 400.00m, 400.00m, 400.00m, 400.00m }; // Same rate for all their claims
-            ViewBag.HoursWorkedList = new List<decimal> { 10.0m, 12.5m, 8.5m, 15.0m };
-            ViewBag.ClaimStatusList = new List<string> {
-            "Submitted",  
-            "Approved",   
-            "Paid",       
-            "Rejected"   
-    };
+                // Verify password
+                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(model.Password, user.passwordHashed);
 
-            // Calculate the total hours for all claims
-            ViewBag.TotalHours = ((List<decimal>)ViewBag.HoursWorkedList).Sum();
-            return View();
+                if (!isPasswordValid)
+                {
+                    return InvalidCredentials(model);
+                }
+
+                // Verify role
+                if (user.RoleID.ToString() != model.CustomRole)
+                {
+                    return InvalidRole(model);
+                }
+
+                return RedirectToDashboard(user);
+            }
+            else
+            {
+                return InvalidCredentials(model);
+            }
         }
-        
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignUp(SignUpViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.AvailableRoles = GetAvailableRoles();
+                return View(model);
+            }
+
+            // Check if email already exists
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == model.Email);
+
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Email", "Email address already registered");
+                model.AvailableRoles = GetAvailableRoles();
+                return View(model);
+            }
+
+            // Hash password and create user
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
+            var user = new User
+            {
+                UserName = model.UserName,
+                Email = model.Email,
+                passwordHashed = passwordHash,
+                RoleID = int.Parse(model.CustomRole),
+                CreatedDate = DateTime.Now,
+                IsActive = true,
+                Claims = new List<Claim>()
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Account created successfully! Please sign in.";
+            return RedirectToAction("SignIn");
+        }
+
+        public async Task<IActionResult> MonthlyClaimsLecturer(string name)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == name);
+
+            if (user == null)
+            {
+                return RedirectToAction("SignIn");
+            }
+
+            // Get claims from database instead of hardcoded ViewBags
+            var claims = await _context.Claims
+                .Where(c => c.UserID == user.UserID)
+                .OrderByDescending(c => c.ClaimDate)
+                .ToListAsync();
+
+            var viewModel = new MonthlyClaimsViewModel
+            {
+                Name = name,
+                Claims = claims,
+                TotalHours = claims.Sum(c => c.Amount) // Using Amount as hours for now
+            };
+
+            return View(viewModel);
+        }
+
+        // Helper methods
+        private IActionResult InvalidCredentials(SignInViewModel model)
+        {
+            TempData["ErrorMessage"] = "Invalid email or password";
+            model.AvailableRoles = GetAvailableRoles();
+            return View("SignIn", model);
+        }
+
+        private IActionResult InvalidRole(SignInViewModel model)
+        {
+            TempData["ErrorMessage"] = "Role selection does not match your account";
+            model.AvailableRoles = GetAvailableRoles();
+            return View("SignIn", model);
+        }
+
+        private IActionResult RedirectToDashboard(User user)
+        {
+            var redirectData = new { name = user.UserName };
+
+            return user.RoleID switch
+            {
+                2 => RedirectToAction("MonthlyClaimsCoordinator", "Home", redirectData), // Coordinator
+                3 => RedirectToAction("MonthlyClaimManager", "Home", redirectData),      // Manager
+                _ => RedirectToAction("MonthlyClaimsLecturer", redirectData)             // Lecturer (1)
+            };
+        }
+
+        private List<SelectListItem> GetAvailableRoles()
+        {
+            return new List<SelectListItem>
+            {
+                new SelectListItem { Text = "Lecturer", Value = "1" },
+                new SelectListItem { Text = "Coordinator", Value = "2" },
+                new SelectListItem { Text = "Manager", Value = "3" }
+            };
+        }
     }
 }
