@@ -1,0 +1,175 @@
+﻿@model POEpt1.ViewModels.Claims.ClaimDetailsViewModel
+@{
+    ViewData["Title"] = "Claim Details";
+}
+@Html.Partial("_menu")
+<link rel="stylesheet" href="~/css/SignUp.css" />
+
+<div class="ClaimsMSG">
+    <h1>Claim Details</h1>
+    <h2>Claim #@Model.ClaimID</h2>
+</div>
+
+<div class="claims-card">
+    <div class="card-header claims-card-header">
+        <h3 class="card-title claims-card-title">
+            <i class="fas fa-file-invoice"></i> Claim Information
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Basic Claim Information -->
+            <div class="col-md-6">
+                <div class="detail-section">
+                    <h4 class="detail-section-title">Basic Information</h4>
+                    <div class="detail-item">
+                        <label class="detail-label">Claim ID:</label>
+                        <span class="detail-value claim-id">@Model.ClaimID</span>
+                    </div>
+                    <div class="detail-item">
+                        <label class="detail-label">Lecturer:</label>
+                        <span class="detail-value">@Model.UserName</span>
+                    </div>
+                    <div class="detail-item">
+                        <label class="detail-label">Claim Date:</label>
+                        <span class="detail-value">@Model.ClaimDate.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <div class="detail-item">
+                        <label class="detail-label">Status:</label>
+                        <span class="badge @GetStatusBadgeClass(Model.Status) claims-badge">@Model.Status</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Information -->
+            <div class="col-md-6">
+                <div class="detail-section">
+                    <h4 class="detail-section-title">Financial Details</h4>
+                    <div class="detail-item">
+                        <label class="detail-label">Amount:</label>
+                        <span class="detail-value numeric-cell">R @Model.Amount.ToString("F2")</span>
+                    </div>
+                    <div class="detail-item">
+                        <label class="detail-label">Description:</label>
+                        <span class="detail-value">@Model.Description</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Information -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="detail-section">
+                    <h4 class="detail-section-title">Supporting Document</h4>
+                    <div class="detail-item">
+                        <label class="detail-label">File Name:</label>
+                        <span class="detail-value">@(Model.FileName ?? "No file attached")</span>
+                    </div>
+                    @if (Model.CanDownload)
+                    {
+                        <div class="detail-item">
+                            <label class="detail-label">File Size:</label>
+                            <span class="detail-value">@Model.FormattedFileSize</span>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">File Type:</label>
+                            <span class="detail-value">@Model.FileType</span>
+                        </div>
+                        <div class="mt-3">
+                            <a asp-controller="Claims" asp-action="DownloadFile" asp-route-id="@Model.ClaimID"
+                               class="btn btn-primary">
+                                <i class="fas fa-download"></i> Download Document
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> No supporting document attached to this claim.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Information (if approved/rejected) -->
+        @if (!string.IsNullOrEmpty(Model.ApprovedByName))
+        {
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="detail-section">
+                        <h4 class="detail-section-title">Approval Information</h4>
+                        <div class="detail-item">
+                            <label class="detail-label">@(Model.Status == "Approved" ? "Approved By" : "Rejected By"):</label>
+                            <span class="detail-value">@Model.ApprovedByName</span>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">@(Model.Status == "Approved" ? "Approved Date" : "Rejected Date"):</label>
+                            <span class="detail-value">@Model.ApprovedDate?.ToString("yyyy-MM-dd HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="detail-actions">
+                    <!-- Back button - goes to appropriate dashboard based on user role -->
+                    @if (User.IsInRole("Coordinator") || User.FindFirst("RoleID")?.Value == "2")
+                    {
+                        <a asp-controller="Home" asp-action="MonthlyClaimsCoordinator" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Coordinator Dashboard
+                        </a>
+                    }
+                    else if (User.IsInRole("Manager") || User.FindFirst("RoleID")?.Value == "3")
+                    {
+                        <a asp-controller="Home" asp-action="MonthlyClaimManager" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Manager Dashboard
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Login" asp-action="MonthlyClaimsLecturer" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to My Claims
+                        </a>
+                    }
+
+                    <!-- Approve/Reject buttons for coordinators (only if claim is pending) -->
+                    @if (Model.CanApprove && (User.IsInRole("Coordinator") || User.FindFirst("RoleID")?.Value == "2"))
+                    {
+                        <form asp-action="ApproveClaim" method="post" class="d-inline">
+                            <input type="hidden" name="claimId" value="@Model.ClaimID" />
+                            <button type="submit" class="btn btn-success"
+                                    onclick="return confirm('Are you sure you want to approve claim #@Model.ClaimID?')">
+                                <i class="fas fa-check"></i> Approve Claim
+                            </button>
+                        </form>
+                        <form asp-action="RejectClaim" method="post" class="d-inline">
+                            <input type="hidden" name="claimId" value="@Model.ClaimID" />
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Are you sure you want to reject claim #@Model.ClaimID?')">
+                                <i class="fas fa-times"></i> Reject Claim
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "approved" => "bg-success claims-badge",
+            "rejected" => "bg-danger claims-badge",
+            "pending" => "bg-warning claims-badge",
+            _ => "bg-secondary claims-badge"
+        };
+    }
+}

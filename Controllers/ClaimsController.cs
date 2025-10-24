@@ -141,7 +141,7 @@ namespace POEpt1.Controllers
             }
         }
 
-        // Optional: Add this method to handle file downloads
+             // method to handle file downloads
         public async Task<IActionResult> DownloadFile(int id)
         {
             var claim = await _context.Claims.FindAsync(id);
@@ -165,5 +165,7 @@ namespace POEpt1.Controllers
 
             return File(memory, claim.FileType, claim.FileName);
         }
+
+
     }
 }

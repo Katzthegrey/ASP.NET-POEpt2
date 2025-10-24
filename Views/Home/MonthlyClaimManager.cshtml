@@ -1,105 +1,132 @@
-﻿@{
-    ViewData["Title"] = "MonthlyClaimManager";
+﻿@using POEpt1.ViewModels;
+@model MonthlyClaimsManagerViewModel
+@{
+    ViewData["Title"] = "Monthly Claims Manager";
 }
 @Html.Partial("_menu")
 <link rel="stylesheet" href="~/css/SignUp.css" />
-<div class="Manager-msg">
-<h1>MonthlyClaimsManager</h1>
-<h2>Welcome @ViewBag.Name</h2>
+
+<div class="ClaimsMSG">
+    <h1>Monthly Claims Manager</h1>
+    <h2>Welcome @Model.ManagerName</h2>
 </div>
 
-<!--Managers Table-->
-
-<div class="manager-card">
-    <div class="manager-header">
-        <h3 class="manager-card-title">Approved Claims for Payment</h3>
+<!-- Manager Table -->
+<div class="claims-card">
+    <div class="card-header claims-card-header">
+        <h3 class="card-title claims-card-title">Approved Claims - Payment Review</h3>
+        <span class="badge bg-primary claims-badge">@Model.Claims.Count Claims Ready for Review</span>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table manager-table">
+        @if (Model.Claims.Any())
+        {
+            <table class="table table-bordered table-striped claims-table">
                 <thead>
                     <tr>
-                        <th>
-                            Claim ID
-                        </th>
-                        <th>
-                            Staff ID
-                        </th>
-                        <th>
-                            Lecturer Name
-                        </th>
-                        <th>
-                            Course
-                        </th>
-                        <th>
-                            Coordinator
-                        </th>
-                        <th>
-                            Date
-                        </th>
-                        <th>
-                            Total Hours
-                        </th>
-                        <th>
-                            Total Amount
-                        </th>
-                        <th>
-                            Status
-                        </th>
-                        <th>
-                            Actions
-                        </th>
+                        <th>Claim ID</th>
+                        <th>Staff ID</th>
+                        <th>Lecturer Name</th>
+                        <th>Course</th>
+                        <th>Coordinator</th>
+                        <th>Date</th>
+                        <th>Total Hours</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @{
-                        int rowCount = ViewBag.ClaimIdList.Count;
-                    }
-                    @for (int i = 0; i < rowCount; i++)
+                    @foreach (var claim in Model.Claims)
                     {
                         <tr>
-                            <td class="Manager-Id">@ViewBag.ClaimIdList[i]</td>
+                            <td class="claim-id">@claim.ClaimId</td>
+                            <td class="staff-id">@claim.StaffId</td>
+                            <td>@claim.StaffName</td>
+                            <td>@claim.CourseName</td>
+                            <td>@claim.CoordinatorName</td>
+                            <td>@claim.ClaimDate.ToString("yyyy-MM-dd")</td>
+                            <td class="numeric-cell">@claim.TotalHours.ToString("F1")h</td>
+                            <td class="numeric-cell fw-bold">R @claim.TotalAmount.ToString("N2")</td>
                             <td>
-                                @ViewBag.StaffIdList[i]
-                             </td>
-                            <td>
-                                @ViewBag.StaffNameList[i]
+                                <span class="badge @GetStatusBadgeClass(claim.FinalStatus) claims-badge">@claim.FinalStatus</span>
                             </td>
                             <td>
-                                @ViewBag.CourseList[i]
-                            </td>
-                            <td>
-                                @ViewBag.CoordinatorList[i]
-                            </td>
-                            <td>
-                                @ViewBag.DateList[i]
-                            </td>
-                            <td>
-                                @ViewBag.TotalHoursList[i]h
-                            </td>
-                            <td class="fw-bold">R @ViewBag.TotalAmountList[i].ToString("N2")
-                            </td>
-                            <td>
-                                @{
-                                    var status = ViewBag.FinalStatusList[i];
-                                    var badgeClass = "bg-warning";
-                                    if (status == "Ready for Payment") badgeClass = "bg-success";
-                                    if (status == "Paid") badgeClass = "bg-info";
-                                    if (status == "Rejected") badgeClass = "bg-danger";
-                                    if (status == "On Hold") badgeClass = "bg-secondary";
-                                }
-                                <span class="badge @badgeClass">@status</span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-success">Authorize Payment</button>
-                                    <button class="btn btn-warning">Place on Hold</button>
-                                    <button class="btn btn-info">View Details</button>
+                                <div class="manager-btn-group">
+                                    <form asp-action="AuthorizePayment" method="post" class="d-inline">
+                                        <input type="hidden" name="claimId" value="@claim.ClaimId" />
+                                        <button type="submit" class="btn btn-success btn-sm"
+                                                onclick="return confirm('Authorize payment for claim #@claim.ClaimId?')">
+                                            <i class="fas fa-check-circle"></i> Pay
+                                        </button>
+                                    </form>
+                                    <form asp-action="PlaceOnHold" method="post" class="d-inline">
+                                        <input type="hidden" name="claimId" value="@claim.ClaimId" />
+                                        <button type="submit" class="btn btn-warning btn-sm"
+                                                onclick="return confirm('Place claim #@claim.ClaimId on hold?')">
+                                            <i class="fas fa-pause"></i> Hold
+                                        </button>
+                                    </form>
+                                    <a asp-controller="Home" asp-action="ClaimDetails" asp-route-id="@claim.ClaimId"
+                                       class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
                                 </div>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <h4>No approved claims found</h4>
+                <p>There are no claims ready for payment review at this time.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Quick Stats - Below the table -->
+<div class="quick-stats-container">
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count</div>
+                <div class="stat-label">Total Claims</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">R @Model.Claims.Sum(c => c.TotalAmount).ToString("F2")</div>
+                <div class="stat-label">Total Amount</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count(c => c.FinalStatus == "Ready for Payment")</div>
+                <div class="stat-label">Ready to Pay</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count(c => c.FinalStatus == "On Hold")</div>
+                <div class="stat-label">On Hold</div>
+            </div>
         </div>
     </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "ready for payment" => "bg-success claims-badge",
+            "paid" => "bg-info claims-badge",
+            "on hold" => "bg-warning claims-badge",
+            "rejected" => "bg-danger claims-badge",
+            _ => "bg-secondary claims-badge"
+        };
+    }
+}

@@ -1,80 +1,164 @@
-﻿
+﻿@using POEpt1.ViewModels;
+@model MonthlyClaimsCoordinatorViewModel;
 @{
-    ViewData["Title"] = "MonthlyClaimsCoordinator";
+    ViewData["Title"] = "Monthly Claims Coordinator";
 }
 @Html.Partial("_menu")
 <link rel="stylesheet" href="~/css/SignUp.css" />
-<div class="Coordinator-msg">
-<h1>MonthlyClaimsCoordinator</h1>
-<h2>@ViewBag.Name</h2>
+
+<!-- Success/Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="ClaimsMSG">
+    <h1>Monthly Claims Coordinator</h1>
+    <h2>Welcome @Model.CoordinatorName</h2>
 </div>
 
-<!--Coordinators table-->
-<div class="coordinator-card">
-    <div class="coordinator-header coordinator-card-header">
-        <h3 class="card-title coordinator-card-title">Claims Info Review Board</h3>
+<!-- Status Filter -->
+<div class="filter-section mb-4">
+    <form method="get" class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label for="statusFilter" class="form-label">Filter by Status:</label>
+        </div>
+        <div class="col-auto">
+            <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                @foreach (var status in Model.AvailableStatuses)
+                {
+                    <option value="@status" selected="@(Model.StatusFilter == status)">@status</option>
+                }
+            </select>
+        </div>
+    </form>
+</div>
+
+<!-- Coordinators table -->
+<div class="claims-card">
+    <div class="card-header claims-card-header">
+        <h3 class="card-title claims-card-title">Claims Review Board</h3>
+        <span class="badge bg-primary claims-badge">@Model.Claims.Count Claims</span>
     </div>
     <div class="card-body">
-        <table id="example1" class="table table-bordered table-striped claims-table">
-            <thead>
-                <tr>
-                    <th>
-                        Staff ID
-                    </th>
-                    <th>
-                        Lecturer Name
-                    </th>
-                    <th>
-                        Claim ID
-                    </th>
-                    <th>
-                        Claim Date
-                    </th>
-                    <th>
-                        TotalHours Worked
-                    </th>
-                    <th>
-                        Claim Status
-                    </th>
-                    <th>
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    int rowCount = ViewBag.StaffIdList.Count;
-                }
-                @for (int i = 0; i < rowCount; i++)
-                {
+        @if (Model.Claims.Any())
+        {
+            <table class="table table-bordered table-striped claims-table">
+                <thead>
                     <tr>
-                        <td class="staff-id">@ViewBag.StaffIdList[i]</td>
-                        <td>
-                            @ViewBag.StaffNameList[i]
-                        </td>
-                        <td>
-                            @ViewBag.ClaimIdList[i]
-                        </td>
-                        <td>
-                            @ViewBag.ClaimDateList[i]
-                        </td>
-                        <td>
-                            @ViewBag.TotalHoursList[i]h
-                        </td>
-                        <td>
-                            @ViewBag.ClaimStatusList[i]
-                        </td>
-                        <td>
-                            <div class="coordinator-btn-group ">
-                                <button class="btn-success">Approve</button>
-                                <button class="btn-danger">Reject</button>
-                                <button class="btn-info">View</button>
-                            </div>
-                        </td>
+                        <th>Staff ID</th>
+                        <th>Lecturer Name</th>
+                        <th>Claim ID</th>
+                        <th>Claim Date</th>
+                        <th>Total Hours</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var claim in Model.Claims)
+                    {
+                        <tr>
+                            <td class="staff-id">@claim.StaffId</td>
+                            <td>@claim.UserName</td>
+                            <td class="claim-id">@claim.ClaimId</td>
+                            <td>@claim.ClaimDate.ToString("yyyy-MM-dd")</td>
+                            <td class="numeric-cell">@claim.TotalHours.ToString("F1")h</td>
+                            <td class="numeric-cell">R @claim.Amount.ToString("F2")</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(claim.ClaimStatus) claims-badge">@claim.ClaimStatus</span>
+                            </td>
+                            <td>
+                                <div class="coordinator-btn-group">
+                                    @if (claim.ClaimStatus == "Pending")
+                                    {
+                                        <form asp-action="ApproveClaim" method="post" class="d-inline">
+                                            <input type="hidden" name="claimId" value="@claim.ClaimId" />
+                                            <button type="submit" class="btn btn-success btn-sm"
+                                                    onclick="return confirm('Are you sure you want to approve claim #@claim.ClaimId?')">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                        </form>
+                                        <form asp-action="RejectClaim" method="post" class="d-inline">
+                                            <input type="hidden" name="claimId" value="@claim.ClaimId" />
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('Are you sure you want to reject claim #@claim.ClaimId?')">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </form>
+                                    }
+                                    <a asp-controller="Home" asp-action="ClaimDetails" asp-route-id="@claim.ClaimId"
+                                       class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <h4>No claims found</h4>
+                <p>There are no @(Model.StatusFilter != "All" ? Model.StatusFilter.ToLower() : "") claims to review at this time.</p>
+            </div>
+        }
     </div>
 </div>
 
+<!-- Quick Stats - Below the table -->
+<div class="quick-stats-container">
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count</div>
+                <div class="stat-label">Total Claims</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count(c => c.ClaimStatus == "Pending")</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count(c => c.ClaimStatus == "Approved")</div>
+                <div class="stat-label">Approved</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count(c => c.ClaimStatus == "Rejected")</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "approved" => "bg-success claims-badge",
+            "rejected" => "bg-danger claims-badge",
+            "pending" => "bg-warning claims-badge",
+            _ => "bg-secondary claims-badge"
+        };
+    }
+}

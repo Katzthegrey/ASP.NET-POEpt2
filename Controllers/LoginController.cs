@@ -211,9 +211,9 @@ public async Task<IActionResult> MonthlyClaimsLecturer(string name)
 
             return user.RoleID switch
             {
-                2 => RedirectToAction("MonthlyClaimsCoordinator", "Home", redirectData), // Coordinator
-                3 => RedirectToAction("MonthlyClaimManager", "Home", redirectData),      // Manager
-                _ => RedirectToAction("MonthlyClaimsLecturer", redirectData)             // Lecturer (1)
+                2 => RedirectToAction("MonthlyClaimsCoordinator", "Home", redirectData), 
+                3 => RedirectToAction("MonthlyClaimManager", "Home", redirectData),      
+                _ => RedirectToAction("MonthlyClaimsLecturer", redirectData)             
             };
         }
 
