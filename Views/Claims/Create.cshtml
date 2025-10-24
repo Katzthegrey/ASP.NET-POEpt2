@@ -1,0 +1,162 @@
+﻿@using POEpt1.ViewModels.Claims
+@model SubmitClaimViewModel
+@{
+    ViewData["Title"] = "Submit New Claim";
+}
+
+@Html.Partial("_menu")
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="claim-form-card">
+                <div class="card-header claim-form-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-file-upload"></i> Submit New Claim
+                    </h2>
+                    <p class="card-subtitle">Fill in the details below to submit your monthly claim</p>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data" class="claim-form">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Description Field -->
+                        <div class="form-group mb-4">
+                            <label asp-for="Description" class="form-label">
+                                <i class="fas fa-file-alt"></i> Description
+                            </label>
+                            <input asp-for="Description" class="form-control form-control-lg"
+                                   placeholder="Enter course name or description" />
+                            <span asp-validation-for="Description" class="text-danger validation-message"></span>
+                        </div>
+
+                        <!-- Amount Field -->
+                        <div class="form-group mb-4">
+                            <label asp-for="Amount" class="form-label">
+                                <i class="fas fa-money-bill-wave"></i> Amount
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text currency-symbol">R</span>
+                                <input asp-for="Amount" class="form-control" placeholder="0.00" step="0.01" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger validation-message"></span>
+                        </div>
+
+                        <!-- File Upload Box -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-paperclip"></i> Supporting Document
+                            </label>
+                            <div class="file-upload-box">
+                                <div class="file-upload-area" id="fileUploadArea">
+                                    <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                                    <h4 class="file-upload-title">Drop your file here or click to browse</h4>
+                                    <p class="file-upload-subtitle">Supports: PDF, Word, JPG, PNG (Max: 5MB)</p>
+                                    <input asp-for="ProofDocument" class="file-upload-input" type="file"
+                                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                                    <div class="file-info" id="fileInfo"></div>
+                                </div>
+                            </div>
+                            <span asp-validation-for="ProofDocument" class="text-danger validation-message"></span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-submit">
+                                <i class="fas fa-paper-plane"></i> Submit Claim
+                            </button>
+                            <a asp-controller="Login" asp-action="MonthlyClaimsLecturer" class="btn btn-secondary btn-cancel">
+                                <i class="fas fa-arrow-left"></i> Back to Claims
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileInput = document.querySelector('.file-upload-input');
+            const fileInfo = document.getElementById('fileInfo');
+
+            // File upload area click handler
+            fileUploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            // File input change handler
+            fileInput.addEventListener('change', function(e) {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+
+                    fileInfo.innerHTML = `
+                        <div class="file-selected">
+                            <i class="fas fa-file"></i>
+                            <div class="file-details">
+                                <strong>${file.name}</strong>
+                                <span>${fileSize} MB</span>
+                            </div>
+                            <button type="button" class="btn-remove-file" onclick="clearFile()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    fileUploadArea.classList.add('file-selected');
+                }
+            });
+
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                fileUploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                fileUploadArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                fileUploadArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                fileUploadArea.classList.add('drag-over');
+            }
+
+            function unhighlight() {
+                fileUploadArea.classList.remove('drag-over');
+            }
+
+            fileUploadArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        function clearFile() {
+            const fileInput = document.querySelector('.file-upload-input');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileUploadArea = document.getElementById('fileUploadArea');
+
+            fileInput.value = '';
+            fileInfo.innerHTML = '';
+            fileUploadArea.classList.remove('file-selected');
+        }
+    </script>
+}

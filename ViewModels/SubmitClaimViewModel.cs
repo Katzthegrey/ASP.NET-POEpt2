@@ -16,11 +16,13 @@ namespace POEpt1.ViewModels.Claims
         public string Description { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Please upload a proof document")]
-        [FileExtensions(Extensions = "pdf,doc,docx,jpg,jpeg,png",
-                       ErrorMessage = "Only PDF, Word, JPG, and PNG files are allowed")]
+      //  [FileExtensions(Extensions = "pdf,doc,docx,jpg,jpeg,png",
+                     //  ErrorMessage = "Only PDF, Word, JPG, and PNG files are allowed")]
         [MaxFileSize(5 * 1024 * 1024, ErrorMessage = "File size cannot exceed 5MB")]
         [Display(Name = "Proof Document")]
         public IFormFile ProofDocument { get; set; }
+
+
     }
 
     // Custom validation attribute for file size

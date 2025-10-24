@@ -1,91 +1,156 @@
-﻿@{
-    ViewData["Title"] = "MonthlyClaimsLecturer";
+﻿@using POEpt1.ViewModels
+@using POEpt1.ViewModels.Account;
+@using POEpt1.ViewModels.Claims;
+@model MonthlyClaimsLecturerViewModel
+@{
+    ViewData["Title"] = "Monthly Claims - Lecturer";
 }
 @Html.Partial("_menu")
 <link rel="stylesheet" href="~/css/SignUp.css" />
 
 <div class="ClaimsMSG">
-<h1>MonthlyClaimsLecturer</h1>
-<h2>Welcome @ViewBag.Name</h2>
-</div>  
- <!-- Lecturer Design Table-->
-<div class="text-end mb-3">
-    <a action="Add_Claim" class="claims-btn-primary">
-        ADD NEW CLAIM
-        <i class="fas fa-file-alt"></i>
-    </a>
+    <h1>Monthly Claims Lecturer</h1>
+    <h2>Welcome @Model.UserName</h2>
 </div>
+
+<!-- Action Buttons - Submit on right, View History on left -->
+<div class="action-buttons-container">
+    <div class="action-buttons-row">
+        <div class="left-buttons">
+            <a asp-controller="Claims" asp-action="History" asp-route-userName="@Model.UserName"
+               class="btn btn-outline-primary">
+                <i class="fas fa-history"></i> VIEW CLAIMS HISTORY
+            </a>
+        </div>
+        <div class="right-buttons">
+            <a asp-controller="Claims" asp-action="Create" class="claims-btn-primary">
+                <i class="fas fa-plus"></i> SUBMIT NEW CLAIM
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Claims Table -->
 <div class="claims-card">
     <div class="card-header claims-card-header">
-        <h3 class="card-title claims-card-title">Lecturers Claim Info</h3>
+        <h3 class="card-title claims-card-title">Recent Claims</h3>
     </div>
     <div class="card-body">
-        <table id="example1" class="table table-bordered table-striped claims-table">
-            <thead>
-                <tr>
-                    <th>
-                        Claim ID
-                    </th>
-                    <th>
-                        Claim Date
-                    </th>
-                    <th>
-                        Course
-                    </th>
-                    <th>
-                        Hourly Rate
-                    </th>
-                    <th>
-                        Hours Worked
-                    </th>
-                    <th>
-                        Claim Status
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    int rowCount = ViewBag.ClaimIdList.Count;
-                }
-                @for (int i = 0; i < rowCount; i++)
-                {
+        @if (Model.Claims.Any())
+        {
+            <table class="table table-bordered table-striped claims-table">
+                <thead>
                     <tr>
-                        <td class="claim-id">@ViewBag.ClaimIdList[i]</td>
-                        <td>
-                            @ViewBag.ClaimDateList[i]
-                        </td>
-                        <td>
-                            @ViewBag.CourseList[i]
-                        </td>
-                        <td>R
-                            @ViewBag.HourlyRateList[i]
-                        </td>
-                        <td>
-                            @ViewBag.HoursWorkedList[i]h
-                        </td>
-                        <td>
-                            @{
-                                var status = ViewBag.ClaimStatusList[i];
-                                var badgeClass = "bg-secondary claims-badge";
-                                if (status == "Submitted") badgeClass = "bg-primary claims-badge";
-                                if (status == "Approved") badgeClass = "bg-success claims-badge";
-                                if (status == "Paid") badgeClass = "bg-info claims-badge";
-                                if (status == "Rejected") badgeClass = "bg-danger claims-badge";
-                            }
-                            <span class="badge @badgeClass">@status</span>
-                        </td>
+                        <th>Claim ID</th>
+                        <th>Claim Date</th>
+                        <th>Description</th>
+                        <th>Amount (R)</th>
+                        <th>File</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
-            <tfoot>
-                <tr class="table-active">
-                    <td colspan="4" class="text-end"><strong>Total Hours:</strong></td>
-                    <td><strong>@ViewBag.TotalHours h</strong></td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var claim in Model.Claims.Take(10))
+                    {
+                        <tr>
+                            <td class="claim-id">@claim.ClaimId</td>
+                            <td>@claim.ClaimDate.ToString("yyyy-MM-dd")</td>
+                            <td>@claim.Description</td>
+                            <td class="numeric-cell">@claim.Amount.ToString("F2")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(claim.FileName))
+                                {
+                                    <a asp-controller="Claims" asp-action="DownloadFile" asp-route-id="@claim.ClaimId"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No file</span>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    var badgeClass = GetStatusBadgeClass(claim.Status);
+                                }
+                                <span class="badge @badgeClass">@claim.Status</span>
+                            </td>
+                            <td>
+                                <a asp-controller="Claims" asp-action="Details" asp-route-id="@claim.ClaimId"
+                                   class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (Model.Claims.Count > 10)
+            {
+                <div class="text-center mt-3">
+                    <a asp-controller="Claims" asp-action="History" asp-route-userName="@Model.UserName"
+                       class="btn btn-outline-secondary">
+                        View All @Model.Claims.Count Claims
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <h4>No claims found</h4>
+                <p>You haven't submitted any claims yet.</p>
+                <a asp-controller="Claims" asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Submit Your First Claim
+                </a>
+            </div>
+        }
     </div>
 </div>
 
+<!-- Quick Stats - Below the table -->
+<div class="quick-stats-container">
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count</div>
+                <div class="stat-label">Total Claims</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">R @Model.TotalAmount.ToString("F2")</div>
+                <div class="stat-label">Total Amount</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count(c => c.Status == "Pending")</div>
+                <div class="stat-label">Pending Claims</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-number">@Model.Claims.Count(c => c.Status == "Approved")</div>
+                <div class="stat-label">Approved Claims</div>
+            </div>
+        </div>
+    </div>
+</div>
 
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "approved" => "bg-success claims-badge",
+            "paid" => "bg-info claims-badge",
+            "rejected" => "bg-danger claims-badge",
+            "submitted" => "bg-primary claims-badge",
+            _ => "bg-secondary claims-badge"
+        };
+    }
+}

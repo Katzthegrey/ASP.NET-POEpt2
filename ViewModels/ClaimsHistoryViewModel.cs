@@ -5,7 +5,7 @@ namespace POEpt1.ViewModels.Claims
     public class ClaimsHistoryViewModel
     {
         public string UserName { get; set; } = string.Empty;
-        public List<Claim> Claims { get; set; } = new List<Claim>();
+        public List<POEpt1.Models.Claim> Claims { get; set; } = new List<POEpt1.Models.Claim>();
 
         // Calculated properties for the view
         public decimal TotalAmount => Claims.Sum(c => c.Amount);

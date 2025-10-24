@@ -1,9 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using POEpt1.Services;
 using POEpt1.Models;
+using POEpt1.Services;
+using POEpt1.ViewModels;
 using POEpt1.ViewModels.Account;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using SecurityClaim = System.Security.Claims.Claim;
+using Claim = POEpt1.Models.Claim;
 
 namespace POEpt1.Controllers
 {
@@ -73,6 +79,8 @@ namespace POEpt1.Controllers
                     return InvalidRole(model);
                 }
 
+                await CreateAuthenticationCookie(user);
+
                 return RedirectToDashboard(user);
             }
             else
@@ -122,34 +130,67 @@ namespace POEpt1.Controllers
             TempData["SuccessMessage"] = "Account created successfully! Please sign in.";
             return RedirectToAction("SignIn");
         }
+[HttpGet]
+public async Task<IActionResult> MonthlyClaimsLecturer(string name)
+{
+    // Try multiple ways to get the username
+    var userName = name ?? TempData["UserName"]?.ToString();
+    
+    if (string.IsNullOrEmpty(userName))
+    {
+        return RedirectToAction("SignIn");
+    }
 
-        public async Task<IActionResult> MonthlyClaimsLecturer(string name)
-        {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == name);
+    var user = await _context.Users
+        .FirstOrDefaultAsync(u => u.UserName == userName);
 
-            if (user == null)
-            {
-                return RedirectToAction("SignIn");
-            }
+    if (user == null)
+    {
+        return RedirectToAction("SignIn");
+    }
 
-            // Get claims from database instead of hardcoded ViewBags
-            var claims = await _context.Claims
-                .Where(c => c.UserID == user.UserID)
-                .OrderByDescending(c => c.ClaimDate)
-                .ToListAsync();
+    var claims = await _context.Claims
+        .Where(c => c.UserID == user.UserID)
+        .OrderByDescending(c => c.ClaimDate)
+        .ToListAsync();
 
-            var viewModel = new MonthlyClaimsViewModel
-            {
-                Name = name,
-                Claims = claims,
-                TotalHours = claims.Sum(c => c.Amount) // Using Amount as hours for now
-            };
+    var viewModel = new MonthlyClaimsLecturerViewModel
+    {
+        UserName = user.UserName,
+        Claims = claims,
+        TotalHours = claims.Sum(c => c.Amount),
+        TotalAmount = claims.Sum(c => c.Amount)
+    };
 
-            return View(viewModel);
-        }
+    // Clear TempData after use
+    TempData.Remove("UserName");
+    
+    return View(viewModel);
+}
 
         // Helper methods
+        private async Task CreateAuthenticationCookie(User user)
+        {
+            var claims = new List<SecurityClaim>
+    {
+        new SecurityClaim(ClaimTypes.Name, user.Email),
+        new SecurityClaim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+        new SecurityClaim("UserName", user.UserName),
+        new SecurityClaim("RoleID", user.RoleID.ToString())
+    };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(2)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+        }
         private IActionResult InvalidCredentials(SignInViewModel model)
         {
             TempData["ErrorMessage"] = "Invalid email or password";
