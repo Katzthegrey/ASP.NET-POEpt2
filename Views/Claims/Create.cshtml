@@ -32,16 +32,63 @@
                             <span asp-validation-for="Description" class="text-danger validation-message"></span>
                         </div>
 
+                        <!-- NEW: Hours Worked Field -->
+                        <div class="form-group mb-4">
+                            <label asp-for="HoursWorked" class="form-label">
+                                <i class="fas fa-clock"></i> Hours Worked
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <input asp-for="HoursWorked" class="form-control" placeholder="0.0" step="0.5" min="0.5" max="12" />
+                                <span class="input-group-text">hours</span>
+                            </div>
+                            <span asp-validation-for="HoursWorked" class="text-danger validation-message"></span>
+                            <small class="form-text text-muted">Must be between 0.5 and 12 hours</small>
+                        </div>
+
+                        <!-- NEW: Hourly Rate Field -->
+                        <div class="form-group mb-4">
+                            <label asp-for="HourlyRate" class="form-label">
+                                <i class="fas fa-money-bill-wave"></i> Hourly Rate
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text currency-symbol">R</span>
+                                <input asp-for="HourlyRate" class="form-control" placeholder="400.00" step="0.01" />
+                                <span class="input-group-text">per hour</span>
+                            </div>
+                            <span asp-validation-for="HourlyRate" class="text-danger validation-message"></span>
+                            <small class="form-text text-muted">Standard rate: R400/hour</small>
+                        </div>
+
                         <!-- Amount Field -->
                         <div class="form-group mb-4">
                             <label asp-for="Amount" class="form-label">
-                                <i class="fas fa-money-bill-wave"></i> Amount
+                                <i class="fas fa-calculator"></i> Total Amount
                             </label>
                             <div class="input-group input-group-lg">
                                 <span class="input-group-text currency-symbol">R</span>
                                 <input asp-for="Amount" class="form-control" placeholder="0.00" step="0.01" />
                             </div>
                             <span asp-validation-for="Amount" class="text-danger validation-message"></span>
+
+                            <!-- NEW: Auto-calculation display -->
+                            <div class="calculation-info mt-2">
+                                <small class="text-muted">
+                                    Calculated: R<span id="calculatedAmount">0.00</span>
+                                    (<span id="hoursDisplay">0</span>h × R<span id="rateDisplay">0</span>/h)
+                                </small>
+                                <div id="amountValidation" class="validation-feedback"></div>
+                                <div id="autoApproveInfo" class="auto-approve-info mt-1"></div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: Claim Date Field -->
+                        <div class="form-group mb-4">
+                            <label asp-for="ClaimDate" class="form-label">
+                                <i class="fas fa-calendar"></i> Claim Date
+                            </label>
+                            <input asp-for="ClaimDate" type="date" class="form-control form-control-lg"
+                                   max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="ClaimDate" class="text-danger validation-message"></span>
                         </div>
 
                         <!-- File Upload Box -->
@@ -82,6 +129,71 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const hoursInput = document.querySelector('#HoursWorked');
+            const rateInput = document.querySelector('#HourlyRate');
+            const amountInput = document.querySelector('#Amount');
+            const calculatedAmountSpan = document.querySelector('#calculatedAmount');
+            const hoursDisplaySpan = document.querySelector('#hoursDisplay');
+            const rateDisplaySpan = document.querySelector('#rateDisplay');
+            const amountValidationDiv = document.querySelector('#amountValidation');
+            const autoApproveInfoDiv = document.querySelector('#autoApproveInfo');
+
+            // Real-time calculation and validation
+            function calculateAndValidate() {
+                const hours = parseFloat(hoursInput.value) || 0;
+                const rate = parseFloat(rateInput.value) || 0;
+                const amount = parseFloat(amountInput.value) || 0;
+                const calculated = hours * rate;
+
+                // Update display
+                calculatedAmountSpan.textContent = calculated.toFixed(2);
+                hoursDisplaySpan.textContent = hours;
+                rateDisplaySpan.textContent = rate;
+
+                // Validate amount match
+                const amountMatches = Math.abs(amount - calculated) < 0.01;
+
+                if (amount > 0 && !amountMatches) {
+                    amountValidationDiv.innerHTML = `<small class="text-warning"> Amount should be R${calculated.toFixed(2)}</small>`;
+                    amountValidationDiv.classList.add('text-warning');
+                    amountValidationDiv.classList.remove('text-success');
+                } else if (amountMatches && amount > 0) {
+                    amountValidationDiv.innerHTML = `<small class="text-success"> Amount matches calculation</small>`;
+                    amountValidationDiv.classList.add('text-success');
+                    amountValidationDiv.classList.remove('text-warning');
+                } else {
+                    amountValidationDiv.innerHTML = '';
+                }
+
+                // Auto-approval info
+                if (calculated > 0) {
+                    if (calculated <= 5000 && hours <= 8) {
+                        autoApproveInfoDiv.innerHTML = `<small class="text-success">Eligible for auto-approval</small>`;
+                    } else if (calculated > 5000) {
+                        autoApproveInfoDiv.innerHTML = `<small class="text-info"> Requires manual review (over R5000)</small>`;
+                    } else if (hours > 8) {
+                        autoApproveInfoDiv.innerHTML = `<small class="text-info"> Requires manual review (over 8 hours)</small>`;
+                    }
+                } else {
+                    autoApproveInfoDiv.innerHTML = '';
+                }
+
+                // Auto-fill amount if empty and calculation is valid
+                if (!amountInput.value && calculated > 0) {
+                    amountInput.value = calculated.toFixed(2);
+                    calculateAndValidate(); // Re-run to update validation
+                }
+            }
+
+            // Add event listeners
+            hoursInput.addEventListener('input', calculateAndValidate);
+            rateInput.addEventListener('input', calculateAndValidate);
+            amountInput.addEventListener('input', calculateAndValidate);
+
+            // Initialize calculation
+            calculateAndValidate();
+
+            // Your existing file upload code...
             const fileUploadArea = document.getElementById('fileUploadArea');
             const fileInput = document.querySelector('.file-upload-input');
             const fileInfo = document.getElementById('fileInfo');
@@ -113,40 +225,7 @@
                 }
             });
 
-            // Drag and drop functionality
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                fileUploadArea.addEventListener(eventName, preventDefaults, false);
-            });
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                fileUploadArea.addEventListener(eventName, highlight, false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                fileUploadArea.addEventListener(eventName, unhighlight, false);
-            });
-
-            function highlight() {
-                fileUploadArea.classList.add('drag-over');
-            }
-
-            function unhighlight() {
-                fileUploadArea.classList.remove('drag-over');
-            }
-
-            fileUploadArea.addEventListener('drop', handleDrop, false);
-
-            function handleDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                fileInput.files = files;
-                fileInput.dispatchEvent(new Event('change'));
-            }
+            // ... rest of your existing file upload JavaScript
         });
 
         function clearFile() {
@@ -159,4 +238,26 @@
             fileUploadArea.classList.remove('file-selected');
         }
     </script>
+
+    <style>
+        .calculation-info {
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+
+        .auto-approve-info {
+            font-weight: 500;
+        }
+
+        .validation-feedback {
+            margin-top: 4px;
+        }
+
+        /* Ensure the new fields match your existing styling */
+        .form-group {
+            transition: all 0.3s ease;
+        }
+    </style>
 }

@@ -67,6 +67,21 @@ namespace POEpt1.Controllers
                     }
                 }
 
+                // NEW: Automation validation - Check business rules
+                var businessErrors = ValidateClaimBusinessRules(model);
+                if (businessErrors.Any())
+                {
+                    foreach (var error in businessErrors)
+                    {
+                        ModelState.AddModelError("", error);
+                    }
+                    return View(model);
+                }
+
+                // NEW: Determine if claim can be auto-approved
+                bool isAutoApproved = CanAutoApproveClaim(model);
+                string autoApproveNote = isAutoApproved ? " [Auto-Approved]" : "";
+
                 // Handle file upload
                 string storedFileName = null;
                 string filePath = null;
@@ -115,23 +130,30 @@ namespace POEpt1.Controllers
                     UserID = user.UserID,
                     User = user,
                     Amount = model.Amount,
-                    Description = model.Description,
-                    Status = "Pending",
+                    // NEW: Enhanced description with calculation details
+                    Description = $"{model.Description} | {model.HoursWorked}h @ R{model.HourlyRate}/h{autoApproveNote}",
+                    // NEW: Auto-approve if criteria met
+                    Status = isAutoApproved ? "Approved" : "Pending",
                     ClaimDate = DateTime.Now,
                     FileName = originalFileName,
                     StoredFileName = storedFileName,
                     FilePath = relativePath,
                     FileSize = fileSize,
                     FileType = fileType,
-                    ApprovedBy = null,
+                    
+                    ApprovedBy = isAutoApproved ? null : null,
                     Approver = null,
-                    ApprovedDate = null
+                    ApprovedDate = isAutoApproved ? DateTime.Now : null
                 };
 
                 _context.Claims.Add(claim);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = "Claim submitted successfully!";
+              // success message
+                TempData["SuccessMessage"] = isAutoApproved
+                    ? $"Claim submitted and auto-approved! {model.HoursWorked}h × R{model.HourlyRate} = R{model.Amount:F2}"
+                    : "Claim submitted successfully! Waiting for coordinator review.";
+
                 return RedirectToAction("MonthlyClaimsLecturer", "Login", new { name = user.UserName });
             }
             catch (Exception ex)
@@ -141,7 +163,59 @@ namespace POEpt1.Controllers
             }
         }
 
-             // method to handle file downloads
+       // Helper method for business rule validation
+        public List<string> ValidateClaimBusinessRules(SubmitClaimViewModel model)
+        {
+            var errors = new List<string>();
+
+            // Check if amount matches calculation
+            decimal calculatedAmount = model.HoursWorked * model.HourlyRate;
+            if (Math.Abs(model.Amount - calculatedAmount) > 0.01m)
+            {
+                errors.Add($"Amount (R{model.Amount:F2}) doesn't match calculation: {model.HoursWorked}h × R{model.HourlyRate}/h = R{calculatedAmount:F2}");
+            }
+
+            // Check maximum hours per day
+            if (model.HoursWorked > 12)
+            {
+                errors.Add("Maximum 12 hours allowed per claim.");
+            }
+
+            // Check if claim date is in future
+            if (model.ClaimDate > DateTime.Today)
+            {
+                errors.Add("Claim date cannot be in the future.");
+            }
+
+            // Check hourly rate range
+            if (model.HourlyRate < 100 || model.HourlyRate > 1000)
+            {
+                errors.Add("Hourly rate must be between R100 and R1000.");
+            }
+
+            return errors;
+        }
+
+     
+        public bool CanAutoApproveClaim(SubmitClaimViewModel model)
+        {
+            // Auto-approve if:
+            // Amount matches calculation
+            decimal calculatedAmount = model.HoursWorked * model.HourlyRate;
+            bool amountMatches = Math.Abs(model.Amount - calculatedAmount) < 0.01m;
+
+            //  Claim is under R5000
+            bool underAutoApproveLimit = model.Amount <= 5000;
+
+            // Hours are reasonable
+            bool reasonableHours = model.HoursWorked <= 8;
+
+            //  Not a future date
+            bool validDate = model.ClaimDate <= DateTime.Today;
+
+            return amountMatches && underAutoApproveLimit && reasonableHours && validDate;
+        }
+        // method to handle file downloads
         public async Task<IActionResult> DownloadFile(int id)
         {
             var claim = await _context.Claims.FindAsync(id);

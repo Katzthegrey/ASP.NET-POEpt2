@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using SecurityClaim = System.Security.Claims.Claim;
 using Claim = POEpt1.Models.Claim;
+using Microsoft.AspNetCore.Authorization;
 
 namespace POEpt1.Controllers
 {
@@ -130,43 +131,50 @@ namespace POEpt1.Controllers
             TempData["SuccessMessage"] = "Account created successfully! Please sign in.";
             return RedirectToAction("SignIn");
         }
-[HttpGet]
-public async Task<IActionResult> MonthlyClaimsLecturer(string name)
-{
-    // Try multiple ways to get the username
-    var userName = name ?? TempData["UserName"]?.ToString();
-    
-    if (string.IsNullOrEmpty(userName))
-    {
-        return RedirectToAction("SignIn");
-    }
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> MonthlyClaimsLecturer()
+        {
+            // Get user info from the authentication cookie
+            var userEmail = User.Identity.Name;
+            var userName = User.FindFirst("UserName")?.Value;
+            var userRole = User.FindFirst("RoleID")?.Value;
 
-    var user = await _context.Users
-        .FirstOrDefaultAsync(u => u.UserName == userName);
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return RedirectToAction("SignIn");
+            }
 
-    if (user == null)
-    {
-        return RedirectToAction("SignIn");
-    }
+            // Verify the user is a Lecturer (RoleID = 1)
+            if (userRole != "1")
+            {
+                TempData["ErrorMessage"] = "Access denied. Lecturer role required.";
+                return RedirectToAction("SignIn");
+            }
 
-    var claims = await _context.Claims
-        .Where(c => c.UserID == user.UserID)
-        .OrderByDescending(c => c.ClaimDate)
-        .ToListAsync();
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == userEmail);
 
-    var viewModel = new MonthlyClaimsLecturerViewModel
-    {
-        UserName = user.UserName,
-        Claims = claims,
-        TotalHours = claims.Sum(c => c.Amount),
-        TotalAmount = claims.Sum(c => c.Amount)
-    };
+            if (user == null)
+            {
+                return RedirectToAction("SignIn");
+            }
 
-    // Clear TempData after use
-    TempData.Remove("UserName");
-    
-    return View(viewModel);
-}
+            var claims = await _context.Claims
+                .Where(c => c.UserID == user.UserID)
+                .OrderByDescending(c => c.ClaimDate)
+                .ToListAsync();
+
+            var viewModel = new MonthlyClaimsLecturerViewModel
+            {
+                UserName = user.UserName,
+                Claims = claims,
+                TotalHours = claims.Sum(c => c.Amount),
+                TotalAmount = claims.Sum(c => c.Amount)
+            };
+
+            return View(viewModel);
+        }
 
         // Helper methods
         private async Task CreateAuthenticationCookie(User user)
@@ -211,9 +219,9 @@ public async Task<IActionResult> MonthlyClaimsLecturer(string name)
 
             return user.RoleID switch
             {
-                2 => RedirectToAction("MonthlyClaimsCoordinator", "Home", redirectData), 
-                3 => RedirectToAction("MonthlyClaimManager", "Home", redirectData),      
-                _ => RedirectToAction("MonthlyClaimsLecturer", redirectData)             
+                2 => RedirectToAction("MonthlyClaimsCoordinator", "Home"), 
+                3 => RedirectToAction("MonthlyClaimManager", "Home"),      
+                _ => RedirectToAction("MonthlyClaimsLecturer","Login")             
             };
         }
 
