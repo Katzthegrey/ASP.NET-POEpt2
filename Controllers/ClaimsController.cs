@@ -67,7 +67,7 @@ namespace POEpt1.Controllers
                     }
                 }
 
-                // NEW: Automation validation - Check business rules
+                // Automation validation - Check business rules
                 var businessErrors = ValidateClaimBusinessRules(model);
                 if (businessErrors.Any())
                 {
@@ -78,7 +78,7 @@ namespace POEpt1.Controllers
                     return View(model);
                 }
 
-                // NEW: Determine if claim can be auto-approved
+                // Determine if claim can be auto-approved
                 bool isAutoApproved = CanAutoApproveClaim(model);
                 string autoApproveNote = isAutoApproved ? " [Auto-Approved]" : "";
 
@@ -129,10 +129,9 @@ namespace POEpt1.Controllers
                 {
                     UserID = user.UserID,
                     User = user,
-                    Amount = model.Amount,
-                    // NEW: Enhanced description with calculation details
+                    Amount = model.Amount,                 
                     Description = $"{model.Description} | {model.HoursWorked}h @ R{model.HourlyRate}/h{autoApproveNote}",
-                    // NEW: Auto-approve if criteria met
+                    //  Auto-approve if criteria met
                     Status = isAutoApproved ? "Approved" : "Pending",
                     ClaimDate = DateTime.Now,
                     FileName = originalFileName,

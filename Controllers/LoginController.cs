@@ -218,9 +218,10 @@ namespace POEpt1.Controllers
             var redirectData = new { name = user.UserName };
 
             return user.RoleID switch
-            {
+            {  
                 2 => RedirectToAction("MonthlyClaimsCoordinator", "Home"), 
-                3 => RedirectToAction("MonthlyClaimManager", "Home"),      
+                3 => RedirectToAction("MonthlyClaimManager", "Home"), 
+                4 => RedirectToAction("MonthlyClaimsHR", "Home"),
                 _ => RedirectToAction("MonthlyClaimsLecturer","Login")             
             };
         }
@@ -231,7 +232,9 @@ namespace POEpt1.Controllers
             {
                 new SelectListItem { Text = "Lecturer", Value = "1" },
                 new SelectListItem { Text = "Coordinator", Value = "2" },
-                new SelectListItem { Text = "Manager", Value = "3" }
+                new SelectListItem { Text = "Manager", Value = "3" },
+                new SelectListItem { Text = "HR", Value = "4" }
+
             };
         }
     }

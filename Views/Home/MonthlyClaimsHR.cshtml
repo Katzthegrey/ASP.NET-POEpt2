@@ -1,0 +1,813 @@
+﻿@using POEpt1.ViewModels;
+@model MonthlyClaimsHRViewModel;
+
+@{
+    ViewData["Title"] = "HR Claims Dashboard";
+}
+@Html.Partial("_menu")
+<style>
+    /* ===== HR DASHBOARD SPECIFIC STYLES ===== */
+    .hr-dashboard {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #ec6ead 100%);
+        min-height: 100vh;
+        padding: 20px;
+        margin: -20px;
+    }
+
+    /* Header Section */
+    .HR-msg {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        padding: 30px 40px;
+        margin: 100px auto 30px auto;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(108, 110, 234, 0.25), 0 15px 35px rgba(236, 110, 173, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        text-align: center;
+        position: relative;
+        max-width: 1200px;
+    }
+
+    .HR-msg h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .HR-msg h2 {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Summary Cards */
+    .hr-summary-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hr-summary-card {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        padding: 2rem 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(108, 110, 234, 0.2), 0 10px 25px rgba(236, 110, 173, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hr-summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #ec6ead);
+    }
+
+    .hr-summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(108, 110, 234, 0.3), 0 15px 35px rgba(236, 110, 173, 0.25);
+    }
+
+    .hr-summary-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hr-summary-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Filter Section */
+    .hr-filter-card {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(108, 110, 234, 0.2), 0 10px 25px rgba(236, 110, 173, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        margin-bottom: 2rem;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hr-filter-title {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .hr-filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .hr-form-group {
+        position: relative;
+        margin-bottom: 0;
+    }
+
+    .hr-form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-size: 1rem;
+    }
+
+    .hr-form-select,
+    .hr-form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        color: white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .hr-form-select::placeholder,
+    .hr-form-control::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .hr-form-select:focus,
+    .hr-form-control:focus {
+        outline: none;
+        border-color: rgba(236, 110, 173, 0.6);
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 15px rgba(236, 110, 173, 0.3);
+    }
+
+    .hr-form-select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 16px;
+        padding-right: 45px;
+    }
+
+    /* Buttons */
+    .hr-btn-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        grid-column: 1 / -1;
+        margin-top: 1rem;
+    }
+
+    .hr-btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .hr-btn-primary {
+        background: #3498db;
+        color: white;
+    }
+
+    .hr-btn-primary:hover {
+        background: #2980b9;
+        box-shadow: 0 8px 25px rgba(108, 110, 234, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .hr-btn-success {
+        background: #27ae60;
+        color: white;
+    }
+
+    .hr-btn-success:hover {
+        background: #219653;
+        box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .hr-btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .hr-btn-danger:hover {
+        background: #c0392b;
+        box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .hr-btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+
+    .hr-btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+    }
+
+    /* Claims Table Container */
+    .hr-table-container {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(108, 110, 234, 0.2), 0 10px 25px rgba(236, 110, 173, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hr-table-header {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .hr-table-title {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .hr-table-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .hr-stat-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Table Styling */
+    .hr-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        background: transparent;
+    }
+
+    .hr-table thead th {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        padding: 1.25rem 1rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        text-align: left;
+    }
+
+    .hr-table tbody tr {
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .hr-table tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hr-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-left: 3px solid #ec6ead;
+        transform: translateX(2px);
+    }
+
+    .hr-table tbody td {
+        padding: 1.25rem 1rem;
+        color: white;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        vertical-align: middle;
+    }
+
+    /* Payment Ready Highlight */
+    .payment-ready {
+        background: linear-gradient(135deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.1)) !important;
+        border-left: 3px solid #27ae60 !important;
+    }
+
+    /* Status Badges */
+    .hr-status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid transparent;
+        backdrop-filter: blur(5px);
+    }
+
+    .badge-approved {
+        background: rgba(39, 174, 96, 0.3);
+        color: #27ae60;
+        border-color: #27ae60;
+    }
+
+    .badge-paid {
+        background: rgba(52, 152, 219, 0.3);
+        color: #3498db;
+        border-color: #3498db;
+    }
+
+    .badge-pending {
+        background: rgba(243, 156, 18, 0.3);
+        color: #f39c12;
+        border-color: #f39c12;
+    }
+
+    .badge-rejected {
+        background: rgba(231, 76, 60, 0.3);
+        color: #e74c3c;
+        border-color: #e74c3c;
+    }
+
+    .badge-onhold {
+        background: rgba(149, 165, 166, 0.3);
+        color: #95a5a6;
+        border-color: #95a5a6;
+    }
+
+    /* Staff Avatar */
+    .hr-staff-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #ec6ead);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.8rem;
+        margin-right: 0.5rem;
+    }
+
+    .hr-staff-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .hr-staff-id {
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Action Buttons */
+    .hr-action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .hr-btn-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 6px;
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        text-decoration: none;
+    }
+
+    .hr-btn-view {
+        background: rgba(52, 152, 219, 0.3);
+        color: #3498db;
+        border: 1px solid #3498db;
+    }
+
+    .hr-btn-view:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .hr-btn-paid {
+        background: rgba(39, 174, 96, 0.3);
+        color: #27ae60;
+        border: 1px solid #27ae60;
+    }
+
+    .hr-btn-paid:hover {
+        background: #27ae60;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .hr-empty-state {
+        padding: 3rem 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .hr-empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .hr-empty-state h5 {
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .hr-empty-state p {
+        margin-bottom: 1.5rem;
+    }
+    </style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>HR Claims Dashboard</h2>
+            <p class="text-muted">Welcome, @Model.HRName</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Ready for Payment</h5>
+                    <h3>@Model.ReadyForPaymentCount</h3>
+                    <p class="card-text">Approved claims</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Amount</h5>
+                    <h3>R @Model.TotalApprovedAmount.ToString("N2")</h3>
+                    <p class="card-text">To be processed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">All Claims</h5>
+                    <h3>@Model.TotalClaimsCount</h3>
+                    <p class="card-text">In period</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Avg. Claim</h5>
+                    <h3>R @(Model.TotalClaimsCount > 0 ? (Model.TotalApprovedAmount / Model.ReadyForPaymentCount).ToString("N2") : "0.00")</h3>
+                    <p class="card-text">Per claim</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Report Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status Filter</label>
+                    <select asp-for="StatusFilter" asp-items="new SelectList(Model.AvailableStatuses)" class="form-select">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Time Period</label>
+                    <select asp-for="PeriodFilter" asp-items="new SelectList(Model.AvailablePeriods)" class="form-select" id="periodSelect">
+                    </select>
+                </div>
+                <div class="col-md-3" id="customStartDate" style="display: none;">
+                    <label class="form-label">From Date</label>
+                    <input asp-for="StartDate" type="date" class="form-control" value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-3" id="customEndDate" style="display: none;">
+                    <label class="form-label">To Date</label>
+                    <input asp-for="EndDate" type="date" class="form-control" value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="@Url.Action("HR")" class="btn btn-outline-secondary">
+                        <i class="fas fa-refresh"></i> Reset
+                    </a>
+                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="generatePaymentReport()">
+                        <i class="fas fa-file-pdf"></i> Payment Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Claims Report Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-list-alt"></i> Claims Report
+                <small class="ms-2 text-muted">@Model.Claims.Count records found</small>
+            </h5>
+            <div>
+                <span class="badge bg-success me-2">Ready: @Model.ReadyForPaymentCount</span>
+                <span class="badge bg-primary">Total: R @Model.TotalApprovedAmount.ToString("N2")</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Claims.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0" id="claimsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Staff Name</th>
+                                <th>Staff ID</th>
+                                <th>Department</th>
+                                <th>Course</th>
+                                <th>Hours</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Approved Date</th>
+                                <th>Approved By</th>
+                                <th>Days Since Approval</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model.Claims.OrderByDescending(c => c.ApprovedDate))
+                            {
+                                <tr class="@(claim.IsPaymentReady ? "table-success" : "")">
+                                    <td>
+                                        <strong>#@claim.ClaimId</strong>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; font-size: 12px;">
+                                                @claim.StaffName.Substring(0, 1)
+                                            </div>
+                                            @claim.StaffName
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@claim.StaffId</span>
+                                    </td>
+                                    <td>@claim.Department</td>
+                                    <td>
+                                        <small class="text-muted" title="@claim.CourseName">
+                                            @(claim.CourseName.Length > 30 ? claim.CourseName.Substring(0, 30) + "..." : claim.CourseName)
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@claim.TotalHours.ToString("N1")h</span>
+                                    </td>
+                                    <td>
+                                        <strong>R @claim.TotalAmount.ToString("N2")</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(claim.FinalStatus)">
+                                            @claim.FinalStatus
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (claim.ApprovedDate.HasValue)
+                                        {
+                                            <small>@claim.ApprovedDate.Value.ToString("dd/MM/yyyy")</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@claim.ApprovedByName</small>
+                                    </td>
+                                    <td>
+                                        @if (claim.DaysSinceApproval > 0)
+                                        {
+                                            <span class="badge @(claim.DaysSinceApproval > 7 ? "bg-warning" : "bg-success")">
+                                                @claim.DaysSinceApproval day@(claim.DaysSinceApproval > 1 ? "s" : "")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" title="View Details" onclick="viewClaim(@claim.ClaimId)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            @if (claim.IsPaymentReady)
+                                            {
+                                                <button class="btn btn-outline-success" title="Mark as Paid" onclick="markAsPaid(@claim.ClaimId)">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>Totals:</strong></td>
+                                <td><strong>@Model.Claims.Sum(c => c.TotalHours).ToString("N1")h</strong></td>
+                                <td><strong>R @Model.Claims.Sum(c => c.TotalAmount).ToString("N2")</strong></td>
+                                <td colspan="5"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No claims found</h5>
+                    <p class="text-muted">No claims match the selected criteria.</p>
+                    <a href="@Url.Action("HR")" class="btn btn-primary">Clear Filters</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Show/hide custom date fields based on period selection
+        function toggleCustomDateFields() {
+            const periodSelect = document.getElementById('periodSelect');
+            const customStartDate = document.getElementById('customStartDate');
+            const customEndDate = document.getElementById('customEndDate');
+
+            const isCustom = periodSelect.value === 'Custom';
+            customStartDate.style.display = isCustom ? 'block' : 'none';
+            customEndDate.style.display = isCustom ? 'block' : 'none';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleCustomDateFields();
+            document.getElementById('periodSelect').addEventListener('change', toggleCustomDateFields);
+        });
+
+        // Export to Excel functionality
+        function exportToExcel() {
+            const table = document.getElementById('claimsTable');
+            let csv = [];
+
+            // Headers
+            const headers = [];
+            for (let i = 0; i < table.rows[0].cells.length - 1; i++) { // Exclude actions column
+                headers.push('"' + table.rows[0].cells[i].innerText.replace(/"/g, '""') + '"');
+            }
+            csv.push(headers.join(','));
+
+            // Data rows
+            for (let i = 1; i < table.rows.length - 1; i++) { // Exclude header and footer
+                const row = [];
+                const cells = table.rows[i].cells;
+                for (let j = 0; j < cells.length - 1; j++) { // Exclude actions column
+                    let cellText = cells[j].innerText;
+                    // Remove HTML content and get clean text
+                    cellText = cellText.replace(/<[^>]*>/g, '').trim();
+                    row.push('"' + cellText.replace(/"/g, '""') + '"');
+                }
+                csv.push(row.join(','));
+            }
+
+            // Create and download CSV file
+            const csvContent = "data:text/csv;charset=utf-8," + csv.join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `claims_report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Generate payment report (placeholder function)
+        function generatePaymentReport() {
+            alert('Payment report generation would be implemented here. This could generate a PDF with all approved claims ready for payment processing.');
+            // In a real implementation, this would call a backend endpoint to generate a PDF
+        }
+
+        // View claim details (placeholder function)
+        function viewClaim(claimId) {
+            window.location.href = '@Url.Action("ClaimDetails", "Claims")' + '?id=' + claimId;
+        }
+
+        // Mark claim as paid (placeholder function)
+        function markAsPaid(claimId) {
+            if (confirm('Are you sure you want to mark this claim as paid?')) {
+                // In a real implementation, this would call a backend endpoint to update the status
+                alert('Claim #' + claimId + ' would be marked as paid. This would update the status in the database.');
+                // You could implement: fetch('/Home/MarkAsPaid/' + claimId, { method: 'POST' }).then(...)
+            }
+        }
+    </script>
+}
+
+@functions {
+    public string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Approved" => "bg-success",
+            "Paid" => "bg-info",
+            "On Hold" => "bg-warning",
+            "Rejected" => "bg-danger",
+            "Pending" => "bg-secondary",
+            _ => "bg-dark"
+        };
+    }
+}

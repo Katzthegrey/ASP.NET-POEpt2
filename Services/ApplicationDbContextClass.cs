@@ -22,7 +22,8 @@ namespace POEpt1.Services
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleID = 1, RoleName = "Lecturer" },
                 new Role { RoleID = 2, RoleName = "Coordinator" }, 
-                new Role { RoleID = 3, RoleName = "Manager" }
+                new Role { RoleID = 3, RoleName = "Manager" },
+                new Role { RoleID = 4, RoleName = "HR" }
             );
 
             // User-Role relationship

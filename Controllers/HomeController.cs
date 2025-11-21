@@ -246,6 +246,85 @@ namespace POEpt1.Controllers
             }
         }
 
+      
+        public async Task<IActionResult> MonthlyClaimsHR(MonthlyClaimsHRViewModel filterModel)
+        {
+            var hrName = User.Identity.Name;
+            var model = new MonthlyClaimsHRViewModel { HRName = hrName };
+
+            // Build query based on filters
+            var query = _context.Claims
+                .Include(c => c.User)
+                .Include(c => c.Approver)
+                .AsQueryable();
+
+            // Apply status filter
+            if (!string.IsNullOrEmpty(filterModel.StatusFilter) && filterModel.StatusFilter != "All")
+            {
+                query = query.Where(c => c.Status == filterModel.StatusFilter);
+            }
+            else
+            {
+                // Default to showing approved claims ready for payment
+                query = query.Where(c => c.Status == "Approved" || c.Status == "Paid" || c.Status == "On Hold");
+            }
+
+            // Apply date range filter
+            var (startDate, endDate) = GetDateRange(filterModel.PeriodFilter, filterModel.StartDate, filterModel.EndDate);
+            query = query.Where(c => c.ClaimDate >= startDate && c.ClaimDate <= endDate);
+
+            var claims = await query.ToListAsync();
+
+            // Transform to HR view model
+            model.Claims = claims.Select(c => new HRClaimInfo
+            {
+                ClaimId = c.ClaimId,
+                UserID = c.UserID,
+                StaffName = c.User.UserName,
+                StaffId = $"EMP{c.UserID:0000}", // Generate staff ID from UserID
+                CourseName = c.Description, // Using description as course name
+                CoordinatorName = c.Approver?.UserName ?? "N/A",
+                ClaimDate = c.ClaimDate,
+                TotalHours = c.Amount / 400m, // Calculate hours from amount (R400/hour)
+                TotalAmount = c.Amount,
+                FinalStatus = c.Status,
+                ApprovedDate = c.ApprovedDate,
+                ApprovedByName = c.Approver?.UserName ?? "Auto-Approved",
+                Department = "Academic" // Default department - could be extended from User model
+            }).ToList();
+
+            // Calculate summary statistics
+            model.TotalApprovedAmount = model.Claims.Where(c => c.IsPaymentReady).Sum(c => c.TotalAmount);
+            model.TotalClaimsCount = model.Claims.Count;
+            model.ReadyForPaymentCount = model.Claims.Count(c => c.IsPaymentReady);
+
+            model.StatusFilter = filterModel.StatusFilter;
+            model.PeriodFilter = filterModel.PeriodFilter;
+            model.StartDate = filterModel.StartDate;
+            model.EndDate = filterModel.EndDate;
+
+            return View(model);
+        }
+
+        private (DateTime startDate, DateTime endDate) GetDateRange(string period, DateTime? customStart, DateTime? customEnd)
+        {
+            return period switch
+            {
+                "LastMonth" => (
+                    new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1),
+                    new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddDays(-1)
+                ),
+                "Custom" when customStart.HasValue && customEnd.HasValue => (
+                    customStart.Value,
+                    customEnd.Value
+                ),
+                _ => ( // CurrentMonth default
+                    new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
+                    new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddDays(-1)
+                )
+            };
+        }
+
         public IActionResult Index()
         {
             return View();
